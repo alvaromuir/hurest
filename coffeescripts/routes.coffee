@@ -16,7 +16,6 @@ checkUrl = (urlParam) ->
         return queryModel
 
 paramsObjectify = (params) ->
-    console.log params
     try
         JSON.parse(params)
     catch e
@@ -95,7 +94,6 @@ module.exports = (server, models) ->
     server.get "/input/:col/:id", (req, res, next) ->
         collection = _.str.capitalize req.params.col
         Model = db.models()[checkUrl collection]
-        console.log req.params.id
         Model.findById req.params.id, (err, rslt) ->
             locals = {}
             if err or rslt == null
@@ -146,8 +144,6 @@ module.exports = (server, models) ->
         data =  paramsObjectify(req.body)
         data.created = Date.now()
 
-        console.log data
-
         Model.create data, (err, rslt) ->
             if err
                 res.send 200, error: err
@@ -181,7 +177,6 @@ module.exports = (server, models) ->
             return next()
 
     server.put "/api/:col/:id", (req, res, next) ->
-        console.log req.body
         Model = db.models()[checkUrl req.params.col]
         data =  paramsObjectify(req.body)
         data.updated = Date.now()
