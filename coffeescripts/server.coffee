@@ -10,13 +10,11 @@ routes  = require './routes'
 config  = require './config'
 
 listenOn= 8124
-srvName	= 'Dev'
-dbModel = 'Campaigns'
+srvName	= 'SOME_NAME_HERE'
 
 dbConfig = 
 	uri: '127.0.0.1'
 	name: srvName
-	model: dbModel
 
 # initialize database connection
 config.init dbConfig
@@ -54,7 +52,7 @@ io.set 'log level', 1
 io.set 'origins', 'http://localhost:9000'
 
 io.sockets.on 'connection', (socket) ->
-    socket.emit 'news', '@alvaromuir says, "The server is ready."'
+    socket.emit 'news', '@alvaromuir says, "The huerst server is ready."'
 
 #Routes
 

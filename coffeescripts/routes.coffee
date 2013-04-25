@@ -7,15 +7,10 @@ _           = require 'lodash'
 _.str       = require 'underscore.string'
 _.mixin _.str.exports()
 
+paramsObjectify = (params, col) ->
+    collection = _.rstrip col, 's'
+    return params[collection] if params[collection]
 
-checkUrl = (urlParam) ->
-    queryModel = _.str.capitalize urlParam
-    if queryModel[queryModel.length-1] == 's'
-        return queryModel.substring 0, queryModel.length-1
-    else
-        return queryModel
-
-paramsObjectify = (params) ->
     try
         JSON.parse(params)
     catch e
@@ -93,7 +88,7 @@ module.exports = (server, models) ->
 
     server.get "/input/:col/:id", (req, res, next) ->
         collection = _.str.capitalize req.params.col
-        Model = db.models()[checkUrl collection]
+        Model = db.models()[collection]
         Model.findById req.params.id, (err, rslt) ->
             locals = {}
             if err or rslt == null
@@ -128,7 +123,8 @@ module.exports = (server, models) ->
                     return next()
 
     server.get "/kill/:col/:id", (req, res, next) ->
-        Model = db.models()[checkUrl req.params.col]
+        collection = _.str.capitalize req.params.col
+        Model = db.models()[collection]
         Model.findByIdAndRemove req.params.id, (err, rslt) ->
             if err
                 res.send 200, error: err
@@ -140,55 +136,70 @@ module.exports = (server, models) ->
 
     # REST
     server.post "/api/:col", (req, res, next) ->
-        Model = db.models()[checkUrl req.params.col]
-        data =  paramsObjectify(req.body)
-        data.created = Date.now()
+        collection = _.str.capitalize req.params.col
+        Model = db.models()[collection]
+        if Model
+            data =  paramsObjectify(req.body)
+            data.created = Date.now()
 
-        Model.create data, (err, rslt) ->
-            if err
-                res.send 200, error: err
-            else
-                res.send 200, 
-                    status: 'OK'
-                    created:
-                        _id: rslt._id
-                        title: rslt.title
-            return next()
+            Model.create data, (err, rslt) ->
+                if err
+                    res.send 200, error: err
+                else
+                    res.send 200
+                return next()
+        else
+            res.send 200,
+                error: 'Schema for ' + req.params.col + ' does not exist.'
 
     server.get "/api/:col", (req, res, next) ->
-        Model = db.models()[checkUrl req.params.col]
-        Model.find {}, (err, rslts) ->
+        collection = _.str.capitalize req.params.col
+        hideList = schemas[collection].jsonOmit
+
+        Model = db.models()[collection]
+        Model.find {}, (err, rcrds) ->
             if err
                 res.send 200, error: err
             else
-                count = rslts.length
-                res.send 200,
-                    count: count
-                    results: rslts
-            return next()
+                # play nice with ember
+                rslts = {}
+                rsltsArr = []
+                _.each rcrds, (doc) ->
+                    rsltsArr.push _.omit doc.toJSON(), hideList
+                rslts[req.params.col] = rsltsArr
+                res.send 200, rslts
+            return
 
     server.get "/api/:col/:id", (req, res, next) ->
-        Model = db.models()[checkUrl req.params.col]
-        Model.findById req.params.id, (err, rslt) ->
+        collection = _.str.capitalize req.params.col
+        hideList = schemas[collection].jsonOmit
+
+        Model = db.models()[collection]
+        Model.findById req.params.id, (err, doc) ->
             if err
                 res.send 200, error: err
             else
-                res.send 200, rslt
-            return next()
+                # play nice with ember
+                rslts = {}
+                rslts[_.rstrip req.params.col, 's'] = _.omit doc.toJSON(), hideList
+                res.send 200, rslts
+            return
 
     server.put "/api/:col/:id", (req, res, next) ->
-        Model = db.models()[checkUrl req.params.col]
-        data =  paramsObjectify(req.body)
+        collection = _.str.capitalize req.params.col
+        Model = db.models()[collection]
+        data =  paramsObjectify(req.body, req.params.col)
         data.updated = Date.now()
 
         Model.findByIdAndUpdate req.params.id, data, null, (err, rslt) ->
             if err
                 res.send 200, error: err
             else
-                res.send 200, status: 'OK'
+                res.send 200
 
     server.del "/api/:col/:id", (req, res, next) ->
-        Model = db.models()[checkUrl req.params.col]
+        collection = _.str.capitalize req.params.col
+        Model = db.models()[collection]
         Model.findByIdAndRemove req.params.id, (err, rslt) ->
             if err
                 res.send 200, error: err
@@ -196,3 +207,4 @@ module.exports = (server, models) ->
                 res.send 200, 
                     status: 'OK', 
                     info: "record " + rslt._id + " destroyed"
+            return

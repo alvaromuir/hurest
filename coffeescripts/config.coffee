@@ -11,7 +11,15 @@ module.exports =
 		if _.keys(mongoose.models).length == 0
 			models = {}
 			_.forIn appSchemas, (val, key) ->
-				model = mongoose.Schema appSchemas[key].model
+				model = new mongoose.Schema appSchemas[key].model,
+					toObject: 
+						virtuals: true
+					toJSON:
+						virtuals: true
+
+				_.forIn appSchemas[key].virtuals, (val, key) ->
+					model.virtual(key).get(val)
+					
 				model.methods = _.cloneDeep appSchemas[key].methods
 				models[key] = mongoose.model key, model
 

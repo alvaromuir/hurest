@@ -1,7 +1,7 @@
 # DB setup
 
 module.exports = 
-	Post:
+	Posts:
 		model:
 			title: String
 			author: String
@@ -14,5 +14,9 @@ module.exports =
 				default: Date.now
 		methods: {}
 		validators: {}
+		virtuals: 
+			id: ->
+				return this._id
+		jsonOmit: ['_id']
 		webform:
-			hide: ['created', 'updated']
+			hide: ['created', 'updated',]
