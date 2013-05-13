@@ -1,4 +1,4 @@
-# DB setup
+# Example DB setup
 
 module.exports = 
 	Posts:
