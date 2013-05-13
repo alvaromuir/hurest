@@ -59,13 +59,6 @@ module.exports = (server, models) ->
         schema  = _.pick db.models()[collection].schema.tree, (value, key) ->
                             return key.charAt(0) != '_'
 
-        _(schema).each (val, key) ->
-            if not _.contains(rules.hide, key)
-                newKey = _.str.humanize key
-                schema[newKey] = key
-                delete schema[key]
-
-
         _(rules.hide).each (field) ->
             delete schema[field]
 
@@ -77,7 +70,8 @@ module.exports = (server, models) ->
                 header: "New " + collection
                 blurb: "A new record will go here ..."
                 schema:  schema
-                txtArea: _.str.humanize rules.txtArea
+                txtArea: rules.txtArea
+                dateField: rules.date
         else
             locals = 
                 title: "Model request error"
@@ -102,7 +96,7 @@ module.exports = (server, models) ->
             if err or rslt == null
                 locals = 
                     title: "Model request error"
-                    header: "Opps, a record with id '" + req.params.id + "' does not exist"
+                    header: "Whoops, a record with id '" + req.params.id + "' does not exist"
                     blurb: "Check your url entry. If it's correct, you should create the record."
             else
                 rules = schemas[collection].webform
@@ -146,15 +140,16 @@ module.exports = (server, models) ->
     server.post "/api/:col", (req, res, next) ->
         collection = _.str.capitalize req.params.col
         Model = db.models()[collection]
+
         if Model
-            data =  paramsObjectify(req.body)
+            data = paramsObjectify(req.body)
             data.created = Date.now()
 
             Model.create data, (err, rslt) ->
                 if err
                     res.send 200, error: err
                 else
-                    res.send 200
+                    res.send 200, rslt
                 return next()
         else
             res.send 200,

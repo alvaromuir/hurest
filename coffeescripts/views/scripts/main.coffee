@@ -3,7 +3,7 @@
 require.config
 	paths: 
 		'jquery': '/scripts/vendor/jquery/jquery.min'
-		'moment': '/scripts/vendor/moment/min/moment'
+		'moment': '/scripts/vendor/moment/min/moment.min'
 		'underscore': '/scripts/vendor/lodash/dist/lodash.min'
 		'underscore.string': '/scripts/vendor/underscore.string/dist/underscore.string.min'
 		'utils': 'utils'
@@ -18,7 +18,7 @@ require.config
 				_.mixin _.str.exports()
 
 
-require ['utils', 'app', 'jquery', 'underscore', 'underscore.string'], (utils, app, $) ->
+require ['utils', 'jquery', 'moment', 'underscore', 'underscore.string'], (utils, $, moment) ->
 	'use strict'
 	$ ->
 		console.log 'Peeking behind the curtains now, are you?'
@@ -26,34 +26,68 @@ require ['utils', 'app', 'jquery', 'underscore', 'underscore.string'], (utils, a
 		# This stuff is for the dynamic input form
 		# VERY ugly, not DRY
 
-		$submit = $('#submit')
-		$btns 	= $('.btn')
-		$edit 	= $('#edit')
-		$approve = $('#approve')
-		$cancel	= $('#cancel')
-		$trash	= $('#trash')
-		$labels = $('label')
-		$dds	= $('dd')
-		
-		_.each $labels, (field) ->
-			#console.log $(field).html()
+		$labels = $ 'label'
+		$submit = $ '#submit'
+		$btns 	= $ '.btn'
+		$clear	= $ '#clear'
+		$edit 	= $ '#edit'
+		$approve = $ '#approve'
+		$cancel	= $ '#cancel'
+		$trash	= $ '#trash'
+		$dds	= $ 'dd'
+		$btnNow = $ '#btnNow'
 
-		$('#submit').on 'click', (e) ->
+
+		# for label cleanup
+		$labels.each ->
+			$(this).html(_.str.humanize($(this).html()))
+
+
+		# error modal
+		displayStatus = (sel, banner, msg)->
+			$('.alert :first').addClass sel
+			$('.alert :first strong').html banner
+			$('.alert :first p').html msg
+			$('.alert :first').fadeToggle 'slow'
+
+
+		$(document).on 'click', ->
+			if $('.alert :first').is ':visible'
+				$('.alert :first').fadeToggle()
+
+		$btns.on 'click', (e) ->
+			e.preventDefault()
+
+		$clear.on 'click', ->
+    		$(this).closest('form').find("input[type=text], textarea").val("")
+
+		$btnNow.on 'click', (e) ->
+			$input= $(this).prev 'input:first'
+			$input.val moment(new Date()).format('MMM DD YYYY')
+
+		$submit.on 'click', (e) ->
+			path = window.location.pathname.split('/')
+			apiRoot = path[path.length-1]
+
 			$form = $(this).parents 'form:first'
 			e.preventDefault()
+
 			if $form.serialize()
 				$.ajax
 					type: "POST"
-					url: '/api/post'
+					url: '/api/' + apiRoot
 					data: $form.serialize()
 					success: (data) ->
-						console.log data
-						$(location).attr('href', '/api/post');
+						$form.find("input[type=text], textarea").val("")
+						if data.error
+							displayStatus null, 'WARNING', data.error.message
+						else
+							displayStatus 'alert-success', 'All Good.', '"' + data.title + '" has been posted to the server.'
+					error: (err) ->
+						displayStatus 'alert-error', 'Code Red - Danger!', err.statusText
+
 			else
 				$('.container').append '<div class="warning"><p class="text-error">Please enter some data before your submit!<p></div>'
-
-		$('.btn').on 'click', (e) ->
-			e.preventDefault()
 
 		$edit.on 'click', ->
 			$(this).addClass 'disabled'
@@ -104,8 +138,6 @@ require ['utils', 'app', 'jquery', 'underscore', 'underscore.string'], (utils, a
 				$current.replaceWith '<p class="lead">'+$content+'</p>'
 			$('.container').append '<div class="info"><p class="text-info">This update has been cancelled.<p></div>'
 
-
 		$trash.on 'click', ->
 			console.log $(this).attr('class')
 			document.location.href= window.location.pathname.replace('input', 'kill')
-			

@@ -18,3 +18,4 @@ module.exports =
 		webform:
 			hide: ['id']
 			txtArea: ['body']
+			date: ['publishedAt']

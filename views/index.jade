@@ -30,20 +30,33 @@ html(class='no-js')
             to improve your experience.
         
         div(class='container')
+            div(class="alert", style="display:none")
+                button(type="button", class="close", data-dismiss="alert") &times
+                strong
+                p
+
             h2 #{header}
-            -if (locals.schema)
-                strong #{blurb}
+            if (locals.schema)
                 form(class="form-horizontal")
-                    -if (! locals.results)
+                    if (! locals.results)
                         legend #{blurb}
                         each type, input in schema
-                            -if (input != 'id')
-                                div(class="control-group")
-                                    label(class="control-label", id="lbl_#{input}")= input
-                                    div(class="controls")
-                                        input(type="text", id="#{input}", name="#{input}")
-                        button(id="submit", type="submit", class="btn") Submit
-                    -else
+                            div(class="control-group")
+                                label(class="control-label", id="lbl_#{input}")= input
+                                div(class="controls")
+                                    if (txtArea == input)
+                                        textarea(rows="10", id="#{input}", class="span9", name="#{input}")
+                                    else if (dateField == input)
+                                        .input-append
+                                            input(type="text", id="#{input}", class="span2", name="#{input}")
+                                            span(class="add-on btn", id="btnNow")
+                                                i(class="icon-calendar")
+                                    else
+                                        input(type="text", id="#{input}", class="span8", name="#{input}")
+
+                        button(id="submit", class="btn") Submit
+                        button(id="clear", class="btn") Clear
+                    else
                         div(class="btn-toolbar")
                             div(class="btn-group")
                                 button(id="edit", class="btn")
@@ -61,7 +74,7 @@ html(class='no-js')
                                 dd
                                     p(class="lead")= val
                             hr
-            -else
+            else
                 strong #{blurb}
 
 
