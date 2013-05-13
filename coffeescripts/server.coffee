@@ -10,7 +10,7 @@ routes  = require './routes'
 config  = require './config'
 
 listenOn= 8124
-srvName	= 'SOME_NAME_HERE'
+srvName	= 'synappsλs'
 
 dbConfig = 
 	uri: '127.0.0.1'

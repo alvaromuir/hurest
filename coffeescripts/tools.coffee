@@ -1,6 +1,6 @@
 # Some utilities
 
-fs = require 'fs'
+fs 			= require 'fs'
 
 module.exports = 
 	echo: (data) ->

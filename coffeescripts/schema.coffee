@@ -4,12 +4,9 @@ module.exports =
 	Posts:
 		model:
 			title: String
-			author: String
-			intro: String
-			extended: String
-			created:
-				type: Date
-			updated:
+			slug: String
+			body: String
+			publishedAt:
 				type: Date
 				default: Date.now
 		methods: {}
@@ -19,4 +16,5 @@ module.exports =
 				return this._id
 		jsonOmit: ['_id']
 		webform:
-			hide: ['created', 'updated',]
+			hide: ['id']
+			txtArea: ['body']

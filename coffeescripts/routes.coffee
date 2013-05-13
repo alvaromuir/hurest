@@ -54,10 +54,18 @@ module.exports = (server, models) ->
     # Quick Input
     server.get "/input/:col", (req, res, next) ->
         collection = _.str.capitalize req.params.col
-        rules = schemas[collection].webform
-        models = _.keys db.models()
-        schema = _.pick db.models()[collection].schema.tree, (value, key) ->
-                            return (key.charAt(0) != '_')
+        rules   = schemas[collection].webform
+        models  = _.keys db.models()
+        schema  = _.pick db.models()[collection].schema.tree, (value, key) ->
+                            return key.charAt(0) != '_'
+
+        _(schema).each (val, key) ->
+            if not _.contains(rules.hide, key)
+                newKey = _.str.humanize key
+                schema[newKey] = key
+                delete schema[key]
+
+
         _(rules.hide).each (field) ->
             delete schema[field]
 
@@ -69,7 +77,7 @@ module.exports = (server, models) ->
                 header: "New " + collection
                 blurb: "A new record will go here ..."
                 schema:  schema
-                txtArea: rules.txtArea
+                txtArea: _.str.humanize rules.txtArea
         else
             locals = 
                 title: "Model request error"
