@@ -1,6 +1,6 @@
 ### Hu(mongously) easy RESTFul server
 
-v.0.1
+v.0.0.2
 
 
  
@@ -35,5 +35,5 @@ Optional
 Replace 'SERVER_NAME_HERE' with the name of your choice in server.coffee.
 
 For a test server, something like 
-`(coffee -wc -o ./ coffeescripts/*.coffee & coffee -wc -o ./views/scripts coffeescripts/views/scripts/*.coffee & nodemon)`
+`(coffee -wc -o ./ coffeescripts/*.coffee & coffee -wc -o ./views/scripts coffeescripts/views/scripts/*.coffee & nodemon | bunyan -j)`
 works for me

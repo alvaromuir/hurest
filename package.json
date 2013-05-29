@@ -1,6 +1,6 @@
 {
   "name": "hurest",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Hu(mongously) easy RESTFul server",
   "main": "server.js",
   "scripts": {
