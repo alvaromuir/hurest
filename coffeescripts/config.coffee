@@ -16,11 +16,23 @@ module.exports =
 						virtuals: true
 					toJSON:
 						virtuals: true
+						getters: true
 
-				_.forIn appSchemas[key].virtuals, (val, key) ->
-					model.virtual(key).get(val)
-					
 				model.methods = _.cloneDeep appSchemas[key].methods
+
+				hooks = appSchemas[key].hooks
+				_.forIn hooks, (v, k) ->
+					hook = k
+					hookObj = hooks[k]
+					_.forIn hookObj, (v, k) ->
+						action = k
+						method = hookObj[k]
+						model[hook](action, method)
+
+				virtuals = appSchemas[key].virtuals
+				_.forIn virtuals, (v, k) ->
+					model.virtual(k).get(v)
+
 				models[key] = mongoose.model key, model
 
 		connLength = mongoose.connections.length
