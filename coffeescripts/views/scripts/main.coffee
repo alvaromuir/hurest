@@ -45,21 +45,21 @@ require ['utils', 'jquery', 'moment', 'underscore', 'underscore.string'], (utils
 		$labels.each ->
 			$(this).html(_.str.humanize($(this).html()))
 
-		$('form :first').css("visibility", "visible")
+		$('form').css("visibility", "visible")
 
 		# error modal
 		displayStatus = (sel, banner, msg)->
-			$('.alert :first').addClass sel
-			$('.alert :first strong').html banner
-			$('.alert :first p').html msg
-			$('.alert :first').fadeToggle 'slow'
+			$('.alert').addClass sel
+			$('.alert strong').html banner
+			$('.alert p').html msg
+			$('.alert').fadeToggle 'slow'
 
 		# save current state
 		app.currentFormData = {}
 
 		$(document).on 'click', ->
-			if $('.alert :first').is ':visible'
-				$('.alert :first').fadeToggle(3000)
+			if $('.alert').is ':visible'
+				$('.alert').fadeToggle(3000)
 
 		$btns.on 'click', (e) ->
 			e.preventDefault()
@@ -86,7 +86,7 @@ require ['utils', 'jquery', 'moment', 'underscore', 'underscore.string'], (utils
 					success: (data) ->
 						$form.find("input[type=text], textarea").val("")
 						if data.error
-							displayStatus null, 'WARNING', data.error.message
+							displayStatus 'alert-warn', 'WARNING', data.error.message
 						else
 							displayStatus 'alert-success', 'All Good.', '"' + data.title + '" has been posted to the server.'
 					error: (err) ->

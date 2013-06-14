@@ -1,48 +1,48 @@
-# DB setup
+# DB setup - uses a todo list as an example
 
 _str = require 'underscore.string'
 moment = require 'moment'
 
 module.exports = 
-	Posts:
+	Tasks:
 		model:
 			title: String
-			slug: String
-			body: String
-			publishedAt:
+			details: String
+			dueDate: Date
+			createdAt:
 				type: Date
-				default: Date.now	
 			_id: false
 			id: String
-			draft: 
+			completed: 
 				type: Boolean
 				default: false
 
 		methods: {}
-		validators: {}
+		validators: 
+			title: 
+				fn: (val) ->
+					val.length > 3
+				msg: 'Invalid title length.'
+		
 		virtuals: {}
 		hooks:
 			pre:
 				save: (next) ->
 					this.id = _str.slugify this.title unless this.id
-					next()
-
-				validate: (next) ->
-					# example validator
-					day 	= moment().format 'MM[.]DD[.]YYYY'
-					time 	= moment().format 'h:mm:ss a'
-					this.title = 'Some Random Thoughts on ' + day unless this.title
-					this.slug = 'A post about ' + this.title + ' at '+ time unless this.slug
-					this.body = 'Fat-fingered the keybord, forgot to actually write a post!' unless this.body
+					this.createdAt = Date.now()
 					next()
 
 			post: {}
 
 		jsonOmit: ['_id']
 		webform:
-			hide: ['id']
-			txtArea: ['body']
-			date: ['publishedAt']
-			check: ['draft']
-			radio: []
+			hidden: ['id', 'createdAt']
+			textArea: ['details']
+			date: ['dueDate']
+			checkBox: []
+			radioBtn: [
+				'completed':
+					choices: ['true', 'false']
+					defaults: ['false']
+				]
 			select: []

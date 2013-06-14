@@ -38,28 +38,69 @@ html(class='no-js')
             span(id="header") 
                 h2 #{header}
 
-            if (locals.schema)
+            if locals.schema
 
                 form(class="form-horizontal", style="visibility:hidden")
-                    if (!locals.results)
+                    if !locals.results
                         legend #{blurb}
 
-                        each field, input in locals.schema
+                        each inputObj, label in locals.schema
                             div(class="control-group")
-                                label(class="control-label", id="lbl_#{input}") #{input}
+                                if inputObj == 'hidden'
+                                    label(class="control-label hidden", id="lbl_#{label}") #{label}
+                                else 
+                                    label(class="control-label", id="lbl_#{label}") #{label}
                                 div(class="controls")
-                                    if (txtArea == input)
-                                        textarea(rows="10", id="#{input}", class="span9", name="#{input}")
-                                    else if (dateField == input)
-                                        .input-append
-                                            input(type="text", id="#{input}", class="span2", name="#{input}")
-                                            span(class="add-on btn", id="btnNow")
-                                                i(class="icon-calendar")
-                                    else if (chkBox == input)
-                                        input(type="checkbox", id="#{input}", name="#{input}") #{input}
+
+                                    if typeof inputObj == 'string'
+
+                                        case inputObj
+                                            when 'textArea'
+                                                textarea(rows="10", id="#{label}", class="span9", name="#{label}")
+
+                                            when 'date'
+                                                .input-append
+                                                    input(type="text", id="#{label}", class="span2", name="#{label}")
+                                                    span(class="add-on btn", id="btnNow")
+                                                        i(class="icon-calendar")
+
+                                            when 'hidden'
+                                                input(type="hidden", id="#{label}", name="#{label}")
+
+                                            default
+                                                input(type="text", id="#{label}", class="span8", name="#{label}")
 
                                     else
-                                        input(type="text", id="#{input}", class="span8", name="#{input}")
+                                        each attrs, inputType in inputObj
+                                            case inputType
+                                                when 'radioBtn'
+                                                    each options, key in attrs
+                                                        if key == 'choices'
+                                                           each choice in options
+                                                                label(class="radio inline", id="lbl_#{label}")
+                                                                    if choice == attrs.defaults
+                                                                        input(type="radio", id="#{label}#{choice}", name="#{label}", value="#{choice}", checked)
+                                                                    else
+                                                                        input(type="radio", id="#{label}#{choice}", name="#{label}", value="#{choice}")
+                                                                | #{choice}
+
+                                                when 'checkBox'
+                                                    each choice in attrs.choices
+                                                        label(class="checkbox inline", id="lbl_#{label}")
+                                                            if attrs.defaults.indexOf(choice) > -1
+                                                                input(type="checkbox", id="#{label}", name="#{label}", value="#{choice}", checked) #{label}
+                                                            else
+                                                                input(type="checkbox", id="#{label}", name="#{label}", value="#{choice}") #{label}
+                                                            | #{choice}
+                                                                
+                                                when 'select'
+                                                    label(class="checkbox inline", id="lbl_#{label}")
+                                                    select( id="#{label}", name="#{label}")
+                                                        each choice in attrs.choices
+                                                            if attrs.defaults.indexOf(choice) > -1
+                                                                option(selected="selected") #{choice}
+                                                            else
+                                                                option #{choice}
 
                         button(id="submit", class="btn") Submit
                         button(id="clear", class="btn") Clear
@@ -77,10 +118,9 @@ html(class='no-js')
                                     i(class="icon-trash")
                         dl(class="horiztonal")
 
-                        each val, key in locals.results
-                            // hide 'id' fields from form
+                        each val, inputType in locals.results
                             dt
-                                h3 #{key}
+                                h3 #{inputType}
                                 dd
                                     p(class="lead") #{val}
                             hr
