@@ -29,11 +29,17 @@ module.exports =
 						method = hookObj[k]
 						model[hook](action, method)
 
+
 				virtuals = appSchemas[key].virtuals
 				_.forIn virtuals, (v, k) ->
 					model.virtual(k).get(v)
 
 				models[key] = mongoose.model key, model
+
+
+				validators = appSchemas[key].validators
+				_.forIn validators, (v, k) ->
+					models[key].schema.path(k).validate(v.fn, v.nsg)
 
 		connLength = mongoose.connections.length
 		mongoose.connect setupObj.uri, setupObj.name

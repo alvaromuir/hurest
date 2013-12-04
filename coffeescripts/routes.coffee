@@ -89,20 +89,25 @@ module.exports = (server, models) ->
             schema  = _.pick db.models()[collection].schema.tree, (value, key) ->
                 key.charAt(0) != '_'
 
-            _(rules.hide).each (field) ->
-                delete schema[field]
+            # prep schema for input frontend
+            _(schema).each (val, key) ->
+                schema[key] = 'input'
 
+            _(rules).each (label, inputType) ->
+                _(label).each (val, i) ->
+                    schema[label[i]] = inputType if typeof val == 'string'
+                    if typeof val == 'object'
+                        _(val).each (attrs, complexLabel) ->
+                            schema[complexLabel] = {}
+                            schema[complexLabel][inputType] = {}
+                            _(attrs).each (val, key) ->
+                                schema[complexLabel][inputType][key] = val
             locals = 
                 title: "Create a new " + _.singularize collection
                 header: "New " + _.singularize collection
                 blurb: "Go 'head and create a new "+ _.singularize(collection).toLowerCase()+". Go Nuts."
                 schema:  schema
-
-                txtArea: rules.txtArea
-                dateField: rules.date
-                radioBtn: rules.radio
-                chkBox: rules.check
-                select: rules.select
+                rules: rules
 
             renderPage './views/index.jade', true, locals, res, next
         else
@@ -145,11 +150,10 @@ module.exports = (server, models) ->
                     if err or doc == null
                         locals = errorLocals
                     else
-                        locals = genLocals(doc, schema:schema, hide:rules.hide)
+                        locals = genLocals(doc, schema:schema)
                         renderPage './views/index.jade', true, locals, res, next
                         return
         else
-            console.log 'bad request'
             locals = 
                 title: "Model request error"
                 header: "Opps, a schema for '" + req.params.col + "' does not exist"
@@ -261,7 +265,6 @@ module.exports = (server, models) ->
                     else
                         # play nice with ember
                         if doc
-                            console.log doc
                             rslts = {}
                             rslts[_.rstrip req.params.col, 's'] = _.omit doc.toJSON(), hideList
                             res.send 200, rslts

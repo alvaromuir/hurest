@@ -1,6 +1,6 @@
 ### Hu(mongously) easy RESTFul server
 
-v.0.0.2
+v.0.0.3
  
 Quick node/mongoose/restify powered server for small projects.
 
@@ -14,6 +14,9 @@ Has built in lightweight quick edit suite for your data, located at /input.
 See coffeescripts/routes.coffee for more info
 
 All the bells and whistles for i/o were not included - it is assumed that you really just want a quick back end.
+
+
+NOTE: in the schema webform key, all attributes are expected to be string or objects within arrays.
 
 
 
